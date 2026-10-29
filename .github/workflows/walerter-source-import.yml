@@ -1,0 +1,138 @@
+name: One-time verified W-ALERTER source transfer
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '_walerter_source_import/manifest.json'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: walerter-v16-one-time-transfer
+  cancel-in-progress: false
+
+jobs:
+  transfer:
+    if: github.repository == 'w-alerter/w-alerter-teamartemis' && github.event.head_commit.message == 'Start one-time W-ALERTER v16 verified source transfer'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Restore and verify the exact source snapshot in this repository only
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'w-alerter/w-alerter-teamartemis'
+          export GIT_TERMINAL_PROMPT=0
+          export GIT_ASKPASS="$RUNNER_TEMP/walerter-git-askpass.sh"
+          cat > "$GIT_ASKPASS" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "$1" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$GH_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 700 "$GIT_ASKPASS"
+          trap 'rm -f "$GIT_ASKPASS"' EXIT
+          git clone --depth=1 'https://github.com/w-alerter/w-alerter-teamartemis.git' checkout
+          cd checkout
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git config --local core.autocrlf false
+          python3 - <<'PY'
+          from pathlib import Path
+          from concurrent.futures import ThreadPoolExecutor, as_completed
+          import base64, hashlib, json, os, shutil, subprocess, tempfile, time
+          import urllib.parse, urllib.request
+
+          repository = 'w-alerter/w-alerter-teamartemis'
+          source_origin = 'https://w-alerter-ocean.sebnemnilozoglu.chatgpt.site/'
+          source_tree = '133802490e43835650b2a0b3b13a28f516b7daa5'
+          assert os.environ['GITHUB_REPOSITORY'] == repository
+          root = Path.cwd()
+          payload = root / '_walerter_source_import'
+          manifest = json.loads((payload / 'manifest.json').read_text())
+          assert manifest['repository'] == repository
+          assert manifest['sourceOrigin'] == source_origin
+          assert manifest['sourceTree'] == source_tree
+          assert manifest['fileCount'] == len(manifest['files']) == 1662
+          entries = manifest['files']
+          paths = [entry['path'] for entry in entries]
+          assert len(set(paths)) == 1662
+          for entry in entries:
+              name = entry['path']
+              assert name and not name.startswith('/')
+              assert '..' not in Path(name).parts and '.git' not in Path(name).parts
+              assert not name.startswith(('_walerter_source_import/', '.github/'))
+              assert entry['mode'] in ('100644', '100755')
+              assert 0 <= entry['bytes'] <= 1048576
+
+          def verify(data, entry):
+              assert len(data) == entry['bytes'], 'Size mismatch: ' + entry['path']
+              assert hashlib.sha256(data).hexdigest() == entry['sha256'], 'SHA-256 mismatch: ' + entry['path']
+              header = b'blob ' + str(len(data)).encode('ascii') + b'\0'
+              assert hashlib.sha1(header + data).hexdigest() == entry['sha'], 'Git blob mismatch: ' + entry['path']
+
+          def restore(entry):
+              name = entry['path']
+              destination = root / name
+              if destination.is_file():
+                  verify(destination.read_bytes(), entry)
+                  destination.chmod(0o755 if entry['mode'] == '100755' else 0o644)
+                  return False
+              if name in manifest['inline']:
+                  data = base64.b64decode(manifest['inline'][name], validate=True)
+              else:
+                  assert name.startswith('dist/'), 'Non-public source file has no inline copy: ' + name
+                  url = source_origin + urllib.parse.quote(name[5:], safe='/')
+                  for attempt in range(3):
+                      try:
+                          request = urllib.request.Request(url, headers={
+                              'User-Agent': 'W-ALERTER-one-time-source-transfer/1.0',
+                              'Accept-Encoding': 'identity',
+                          })
+                          with urllib.request.urlopen(request, timeout=45) as response:
+                              assert response.status == 200
+                              assert urllib.parse.urlparse(response.geturl()).scheme == 'https'
+                              data = response.read(entry['bytes'] + 1)
+                          verify(data, entry)
+                          break
+                      except Exception:
+                          if attempt == 2:
+                              raise
+                          time.sleep(2 ** (attempt + 1))
+              verify(data, entry)
+              destination.parent.mkdir(parents=True, exist_ok=True)
+              destination.write_bytes(data)
+              destination.chmod(0o755 if entry['mode'] == '100755' else 0o644)
+              return True
+
+          restored = 0
+          with ThreadPoolExecutor(max_workers=8) as pool:
+              tasks = [pool.submit(restore, entry) for entry in entries]
+              for index, task in enumerate(as_completed(tasks), 1):
+                  restored += task.result()
+                  if index % 100 == 0:
+                      print('Verified', index, 'of 1662 source files', flush=True)
+          assert all((root / entry['path']).is_file() for entry in entries)
+          temporary = Path(tempfile.mkdtemp(prefix='walerter-verify-', dir=os.environ['RUNNER_TEMP']))
+          path_file = temporary / 'paths'
+          path_file.write_bytes(b'\0'.join(path.encode('utf-8') for path in paths) + b'\0')
+          environment = dict(os.environ, GIT_INDEX_FILE=str(temporary / 'index'))
+          subprocess.run(['git', 'read-tree', '--empty'], env=environment, check=True)
+          subprocess.run(['git', 'add', '--force', '--pathspec-from-file=' + str(path_file), '--pathspec-file-nul'], env=environment, check=True)
+          actual_tree = subprocess.check_output(['git', 'write-tree'], env=environment, text=True).strip()
+          assert actual_tree == source_tree, (actual_tree, source_tree)
+          shutil.rmtree(payload)
+          shutil.rmtree(temporary)
+          print('Restored', restored, 'missing files; all 1662 source files verified.')
+          print('Exact source tree:', actual_tree)
+          PY
+          git config --local user.name 'W-ALERTER'
+          git config --local user.email '264802763+w-alerter@users.noreply.github.com'
+          git add --all
+          git commit -m 'Complete W-ALERTER v16 source and optimized data import'
+          git push origin HEAD:refs/heads/main
