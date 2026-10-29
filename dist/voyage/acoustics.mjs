@@ -1,0 +1,30 @@
+/* MacGillivray & de Jong (2021), equations9–11 and authors FileS1, CC-BY4.0.
+ * Equivalent monopole SOURCE levels. No propagation or animal effect is inferred. */
+export const ACOUSTIC_SOURCE=Object.freeze({id:'jomopans-echo-authors-s1',version:'2021-s1-v1',citation:'MacGillivray, A.; de Jong, C. (2021). A Reference Spectrum Model for Estimating Source Levels of Marine Shipping Based on Automated Identification System Data. JMSE9(4),369.',url:'https://doi.org/10.3390/jmse9040369',reference:'https://www.mdpi.com/article/10.3390/jmse9040369/s1',referenceSha256:'554f5e7b867c78510f4f372a44800266ae38ca39f33ce12676dd91e45be0829c',license:'CC BY4.0',sourceDepthMeters:6,referenceLengthMeters:300/3.28084,units:'dB re 1 microPa^2 m^2',speedBasis:'speed over ground',literatureResidualStandardDeviationDb:6,validation:'implementation_matches_authors_calculator; no_W_ALERTER_hydrophone_validation'});
+export const ACOUSTIC_CLASSES=Object.freeze({Bulker:{vc:13.9,cargo:true,dLow:.8,dHigh:3},Containership:{vc:18,cargo:true,dLow:.8,dHigh:3},Cruise:{vc:17.1,cargo:false,dHigh:4},Dredger:{vc:9.5,cargo:false,dHigh:3},Fishing:{vc:6.4,cargo:false,dHigh:3},'Government/Research':{vc:8,cargo:false,dHigh:3},Naval:{vc:11.1,cargo:false,dHigh:3},Other:{vc:7.4,cargo:false,dHigh:3},Passenger:{vc:9.7,cargo:false,dHigh:3},Recreational:{vc:10.6,cargo:false,dHigh:3},Tanker:{vc:12.4,cargo:true,dLow:1,dHigh:3},Tug:{vc:3.7,cargo:false,dHigh:3},'Vehicle Carrier':{vc:15.8,cargo:true,dLow:1,dHigh:3}});
+export const ACOUSTIC_BANDS=Object.freeze([{nominalHz:63,centerHz:10**1.8},{nominalHz:125,centerHz:10**2.1}]);
+export function sourceSpectrum({vesselClass,sogKnots,lengthMeters,frequencyHz}){
+  const c=ACOUSTIC_CLASSES[vesselClass];if(!c||![sogKnots,lengthMeters,frequencyHz].every(Number.isFinite)||sogKnots<=0||lengthMeters<=0||frequencyHz<=0)throw Error('acoustic_inputs_required');
+  const low=c.cargo&&frequencyHz<100,k=low?208:191,b=low?2:0,f1=(low?600:480)/c.vc,d=low?c.dLow:c.dHigh;
+  const sourcePsdDb=k-10*(b+2)*Math.log10(f1)+5*b*Math.log10(frequencyHz)-10*Math.log10((1-(frequencyHz/f1)**(.5*(b+2)))**2+d**2)+60*Math.log10(sogKnots/c.vc)+20*Math.log10(lengthMeters/ACOUSTIC_SOURCE.referenceLengthMeters);
+  return {sourcePsdDb,sourceBandLevelDb:sourcePsdDb+10*Math.log10(.231*frequencyHz),frequencyHz,bandwidthHz:.231*frequencyHz,source:ACOUSTIC_SOURCE,psdUnits:'dB re 1 microPa^2 m^2 / Hz',units:ACOUSTIC_SOURCE.units};
+}
+export function combineCompatibleLevels(samples){
+  if(!Array.isArray(samples)||!samples.length)throw Error('acoustic_samples_required');const first=samples[0];
+  if(!first.quantity||!first.units||!first.frequencyHz||!first.averagingPeriod)throw Error('acoustic_quantity_definition_required');
+  if(samples.some(s=>!Number.isFinite(s.levelDb)||s.quantity!==first.quantity||s.units!==first.units||s.frequencyHz!==first.frequencyHz||s.averagingPeriod!==first.averagingPeriod))throw Error('incompatible_acoustic_quantities');
+  const max=Math.max(...samples.map(s=>s.levelDb));return {...first,levelDb:max+10*Math.log10(samples.reduce((sum,s)=>sum+10**((s.levelDb-max)/10),0)),method:'incoherent energy-domain sum',sourceCount:samples.length};
+}
+export function timeAverageLevels(samples){if(!Array.isArray(samples)||!samples.length||samples.some(s=>!Number.isFinite(s.levelDb)||!Number.isFinite(s.durationHours)||s.durationHours<=0))throw Error('invalid_acoustic_time_samples');const max=Math.max(...samples.map(s=>s.levelDb)),hours=samples.reduce((s,r)=>s+r.durationHours,0),mean=samples.reduce((s,r)=>s+10**((r.levelDb-max)/10)*r.durationHours,0)/hours;return {meanLevelDb:max+10*Math.log10(mean),sourceExposureLevelDb:max+10*Math.log10(mean*hours*3600),durationHours:hours,exposureUnits:'dB re 1 microPa^2 m^2 s',interpretation:'integrated_source_emission_scenario_not_received_SEL'};}
+export function routeSourceNoise(profile,segments){
+  if(!profile?.noise?.scenarioAcknowledged||!ACOUSTIC_CLASSES[profile.noise.vesselClass]||!Number.isFinite(profile.lengthMeters)||profile.lengthMeters<=0)return {status:'unavailable',reason:'vessel_noise_inputs_and_applicability_required',receivedNoise:null,animalEffects:null};
+  if(!Array.isArray(segments)||!segments.length||segments.some(s=>!Number.isFinite(s.sogKnots)||s.sogKnots<=0||!Number.isFinite(s.durationHours)||s.durationHours<=0))return {status:'unavailable',reason:'complete_speed_timeline_required',receivedNoise:null,animalEffects:null};
+  const bands=ACOUSTIC_BANDS.map(b=>{const values=segments.map(s=>({levelDb:sourceSpectrum({vesselClass:profile.noise.vesselClass,sogKnots:s.sogKnots,lengthMeters:profile.lengthMeters,frequencyHz:b.centerHz}).sourceBandLevelDb,durationHours:s.durationHours}));return {...b,...timeAverageLevels(values),units:ACOUSTIC_SOURCE.units};});
+  return {status:'scenario',bands,source:ACOUSTIC_SOURCE,receivedNoise:null,animalEffects:null,assumptions:['AIS-conditioned model uses SOG, not STW','same declared vessel class and length','no machinery/cavitation separation','no source-to-receiver propagation','current-induced SOG changes do not establish actual quieting','no behavioral/injury percentage','literature residual is not this platform validation']};
+}
+export const ACOUSTIC_EVIDENCE=Object.freeze({
+  navison:{url:'https://emsa.europa.eu/navison.html',version:'June2025-v2',sha256:'ae3df87d2c79783c2edf9b710729a17ac516dfb7bca1d209a88a63fcd130ae2d',scope:'European historical2016–2023 and future scenarios; not global2025 observations'},
+  noaa:{url:'https://repository.library.noaa.gov/view/noaa/66184',version:'2024-v3',scope:'AUD INJ/TTS hearing criteria; not universal behavioral response'},
+  southall:{url:'https://doi.org/10.1578/AM.45.2.2019.125',version:'2019',scope:'hearing-group/weighted exposure criteria; source bands alone cannot be compared directly'},
+  species:{'eubalaena-glacialis':'LF cetacean','megaptera-novaeangliae':'LF cetacean','balaenoptera-physalus':'LF cetacean','balaenoptera-musculus':'LF cetacean','delphinus-delphis':'HF cetacean','caretta-caretta':'outside marine-mammal guidance'}
+});

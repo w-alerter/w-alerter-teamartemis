@@ -1,0 +1,388 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "W-ALERTER normalized dataset package v1",
+  "description": "Structural contract. validation.mjs additionally verifies calendar dates, UTC precision, coordinate containment, geometry topology requirements, variable completeness, time coverage and source ranges. Technical validation does not establish scientific validity.",
+  "type": "object",
+  "required": [
+    "format",
+    "schemaVersion",
+    "metadata",
+    "representation"
+  ],
+  "properties": {
+    "format": {
+      "const": "w-alerter-dataset"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "kind",
+        "source",
+        "spatial",
+        "temporal",
+        "resolution",
+        "variables",
+        "taxa",
+        "missingPolicy",
+        "provenance"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{2,100}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "sst",
+            "currents",
+            "chlorophyll",
+            "pace",
+            "calanus",
+            "observations",
+            "acoustics",
+            "tracking",
+            "ais",
+            "protection"
+          ]
+        },
+        "source": {
+          "type": "object",
+          "required": [
+            "provider",
+            "productId",
+            "version",
+            "url",
+            "citation",
+            "license"
+          ],
+          "properties": {
+            "provider": {
+              "type": "string",
+              "minLength": 1
+            },
+            "productId": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "version": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "url": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "citation": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "license": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            }
+          }
+        },
+        "spatial": {
+          "type": "object",
+          "required": [
+            "crs",
+            "bbox"
+          ],
+          "properties": {
+            "crs": {
+              "const": "EPSG:4326"
+            },
+            "bbox": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 4,
+              "maxItems": 4
+            }
+          }
+        },
+        "temporal": {
+          "type": "object",
+          "required": [
+            "start",
+            "end",
+            "calendar"
+          ],
+          "properties": {
+            "start": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "end": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "calendar": {
+              "enum": [
+                "standard",
+                "gregorian",
+                "proleptic_gregorian"
+              ]
+            }
+          }
+        },
+        "resolution": {
+          "type": "object",
+          "required": [
+            "spatial",
+            "temporal"
+          ],
+          "properties": {
+            "spatial": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            },
+            "temporal": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1
+            }
+          }
+        },
+        "variables": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "type": "object",
+            "required": [
+              "key",
+              "units",
+              "standardName"
+            ],
+            "properties": {
+              "key": {
+                "type": "string",
+                "minLength": 1
+              },
+              "units": {
+                "type": "string",
+                "minLength": 1
+              },
+              "standardName": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 1
+              },
+              "validRange": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 2,
+                "maxItems": 2
+              }
+            }
+          }
+        },
+        "taxa": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "missingPolicy": {
+          "const": "preserve-null"
+        },
+        "provenance": {
+          "type": "object",
+          "required": [
+            "originalFile",
+            "sourceSha256",
+            "transformations"
+          ],
+          "properties": {
+            "originalFile": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourceSha256": {
+              "type": "string",
+              "pattern": "^[a-fA-F0-9]{64}$"
+            },
+            "transformations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "representation": {
+          "const": "points"
+        },
+        "records": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100000,
+          "items": {
+            "type": "object",
+            "required": [
+              "lat",
+              "lon",
+              "time",
+              "values"
+            ],
+            "properties": {
+              "lat": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "lon": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "time": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "values": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "records"
+      ]
+    },
+    {
+      "properties": {
+        "representation": {
+          "const": "geojson"
+        },
+        "data": {
+          "type": "object",
+          "required": [
+            "type",
+            "features"
+          ],
+          "properties": {
+            "type": {
+              "const": "FeatureCollection"
+            },
+            "features": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 100000,
+              "items": {
+                "type": "object",
+                "required": [
+                  "type",
+                  "geometry",
+                  "properties"
+                ],
+                "properties": {
+                  "type": {
+                    "const": "Feature"
+                  },
+                  "geometry": {
+                    "type": "object",
+                    "required": [
+                      "type",
+                      "coordinates"
+                    ],
+                    "properties": {
+                      "type": {
+                        "enum": [
+                          "Point",
+                          "MultiPoint",
+                          "LineString",
+                          "MultiLineString",
+                          "Polygon",
+                          "MultiPolygon"
+                        ]
+                      },
+                      "coordinates": {
+                        "type": "array"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "type": "object",
+                    "required": [
+                      "time",
+                      "values"
+                    ],
+                    "properties": {
+                      "time": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "values": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
+  ]
+}

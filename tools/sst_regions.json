@@ -1,0 +1,10 @@
+{
+  "pipelineVersion": "dmi-c3s-sst-2025-v1",
+  "tileSize": 200,
+  "overviewStride": 5,
+  "regions": [
+    {"id": "north-atlantic", "bbox": [-85, 20, -5, 75]},
+    {"id": "mediterranean", "bbox": [-6, 30, 37, 46]}
+  ],
+  "distributionBudgets": {"maxBytes": 94371840, "maxFiles": 10000, "maxFileBytes": 26214400}
+}

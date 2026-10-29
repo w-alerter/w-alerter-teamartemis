@@ -1,0 +1,59 @@
+{
+  "format": "w-alerter-obstacle-grid",
+  "version": 1,
+  "id": "natural-earth-10m-0p1-v1",
+  "engineVersion": "hydra-geometric-astar-1.0.0",
+  "grid": {
+    "west": -180,
+    "south": -85,
+    "stepDegrees": 0.1,
+    "columns": 3600,
+    "rows": 1700,
+    "crs": "EPSG:4326",
+    "node": "cell centre",
+    "cellPolicy": "blocked if any source land or static Antarctic ice-shelf polygon touches the cell",
+    "bitOrder": "little",
+    "rowOrder": "south-to-north",
+    "longitudeWrap": true
+  },
+  "mask": {
+    "path": "mask.bin",
+    "compression": "gzip",
+    "bytes": 41062,
+    "expandedBytes": 765000,
+    "sha256": "f3eb0c58542dda8c3893b600db71d8affd2e84f6b9d4459173ebcd39fe462a20",
+    "compressedSha256": "adb0ca168b9b7557e2d44f396ff66615e8c7ccc60296f33599346ee5fe2edb1c",
+    "blockedCells": 2080549
+  },
+  "sources": [
+    {
+      "file": "ne_10m_land.zip",
+      "sha256": "e547d749445eaa0964aba76738090ec88f5e63c4585122170f98c67a7ea922dc",
+      "bytes": 3269070,
+      "version": "5.1.1",
+      "url": "https://naturalearth.s3.amazonaws.com/10m_physical/ne_10m_land.zip",
+      "license": "public domain"
+    },
+    {
+      "file": "ne_10m_antarctic_ice_shelves_polys.zip",
+      "sha256": "1d421d2487e2721a6e0aee8187e008c9bd8f0adbf4a5297b8503f7bf3c30b04d",
+      "bytes": 163651,
+      "version": "4.1.0",
+      "url": "https://naturalearth.s3.amazonaws.com/10m_physical/ne_10m_antarctic_ice_shelves_polys.zip",
+      "license": "public domain"
+    }
+  ],
+  "attribution": "Made with Natural Earth",
+  "termsUrl": "https://www.naturalearthdata.com/about/terms-of-use/",
+  "precision": "Cartographic 1:10m source; 0.1-degree conservative cells, not a nautical chart",
+  "temporal": "Static coastline. Ice shelves derived from 2003-2004 MOA; not current sea-ice conditions.",
+  "unsupported": [
+    "bathymetry and vessel draft",
+    "current seasonal sea ice",
+    "current navigational hazards",
+    "traffic separation and local regulations",
+    "habitat and collision-risk costs",
+    "fuel or CO2 optimization"
+  ],
+  "createdBy": "tools/preprocess_topology.py"
+}

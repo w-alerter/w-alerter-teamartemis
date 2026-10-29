@@ -1,0 +1,11 @@
+# Offline inspection only. The static website does not depend on Python.
+xarray>=2024.1
+netCDF4>=1.6
+numpy>=1.26
+pillow>=10
+
+# Offline coastline preprocessing / independent geospatial checks only.
+shapely>=2.0
+pyshp>=2.3.1
+# Offline native AIS GeoTIFF extraction only.
+rasterio>=1.4

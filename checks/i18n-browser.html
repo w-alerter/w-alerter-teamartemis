@@ -1,0 +1,25 @@
+<!doctype html><html lang="tr"><meta charset="utf-8"><title>W-ALERTER localisation QA</title>
+<script src="/locales.js"></script><script src="/i18n.js"></script>
+<h1>Localisation QA</h1><select id="month"><option>Ekim</option><option selected>Kasım</option><option>Aralık</option><option>Ocak</option></select>
+<pre data-user-content id="results">Running…</pre>
+<script>
+window.addEventListener('DOMContentLoaded',async()=>{const checks=[],check=(condition,label)=>{if(!condition)throw Error(label);checks.push('PASS: '+label);};try{
+  const original=await (await fetch('/qa-report-source.json')).json();
+  I18n.setLanguage('en');
+  const select=document.getElementById('month');
+  check(select.value==='Kasım'&&select.selectedOptions[0].textContent==='November','English option labels preserve canonical month values');
+  const english=I18n.translateHTML(original),doc=new DOMParser().parseFromString(english,'text/html'),source=new DOMParser().parseFromString(original,'text/html');
+  check(doc.documentElement.lang==='en','Report declares English');
+  check(doc.querySelector('h1').textContent===source.querySelector('h1').textContent,'User-entered voyage name is preserved');
+  check(doc.title.startsWith('Kasım <script>alert(1)<\/script> & Test — W-ALERTER Voyage Report'),'Report title preserves name and translates product label');
+  check(!doc.querySelector('script'),'Escaped user content stays inert');
+  check(doc.querySelector('style').textContent===source.querySelector('style').textContent,'Report CSS is preserved');
+  const copy=doc.body.cloneNode(true);copy.querySelectorAll('[data-user-content]').forEach(el=>el.remove());
+  check(!/[çğıöşüÇĞİÖŞÜ]/u.test(copy.textContent),'Report interface has no untranslated Turkish text');
+  check(copy.textContent.includes('21.72')&&copy.textContent.includes('54.3')&&copy.textContent.includes('0.3253'),'Report distances, savings and NASA reference stay exact');
+  check(copy.textContent.includes('November chlorophyll-a reference:')&&copy.textContent.includes('Print / Save as PDF'),'Report period and print action use English');
+  I18n.setLanguage('tr');check(select.value==='Kasım'&&select.selectedOptions[0].textContent==='Kasım','Switching back restores Turkish without changing data');
+  I18n.setLanguage('en');check(localStorage.getItem('w-alerter.language')==='en','Language preference is saved');
+  document.getElementById('results').textContent=checks.join('\n');
+}catch(error){document.getElementById('results').textContent=checks.join('\n')+'\nFAIL: '+error.message;}});
+</script></html>

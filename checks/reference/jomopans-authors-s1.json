@@ -1,0 +1,302 @@
+{
+  "citation": "MacGillivray, A.; de Jong, C. 2021. A Reference Spectrum Model for Estimating Source Levels of Marine Shipping Based on Automated Identification System Data. JMSE9(4):369. doi:10.3390/jmse9040369. Authors File S1, version1. CC-BY4.0.",
+  "sourceUrl": "https://www.mdpi.com/article/10.3390/jmse9040369/s1",
+  "resolvedUrl": "https://www.mdpi.com/2077-1312/9/4/369/s1",
+  "sha256": "554f5e7b867c78510f4f372a44800266ae38ca39f33ce12676dd91e45be0829c",
+  "input": {
+    "class": "Bulker",
+    "speedKnots": 13.5,
+    "lengthMeters": 211.0
+  },
+  "referenceLengthMeters": 91.4399970739201,
+  "psdFormula": "I16 - 10 * (J16 + 2) *LOG10(L16) +\n             5 * J16 *LOG10(B16) -\n             10 *LOG10((1 - (B16 / L16)^(0.5 * (J16 + 2)))^2 + K16^2)\n+ 60*LOG10($B$10/D16) + 20*LOG10($B$11/C16)",
+  "bandFormula": "M16+10*LOG10(0.231*B16)",
+  "parameters": [
+    {
+      "class": "Bulker",
+      "aisShipType": "70, 75-79 (speed \u2264 16 kn)",
+      "referenceSpeedKnots": 13.9,
+      "cargoBranch": 1.0,
+      "dLow": 0.8,
+      "dHigh": 3.0
+    },
+    {
+      "class": "Containership",
+      "aisShipType": " 71-74 (all speeds); \n70, 75-79 (speed > 16 kn)",
+      "referenceSpeedKnots": 18.0,
+      "cargoBranch": 1.0,
+      "dLow": 0.8,
+      "dHigh": 3.0
+    },
+    {
+      "class": "Cruise",
+      "aisShipType": "60-69 (length > 100 m)",
+      "referenceSpeedKnots": 17.1,
+      "cargoBranch": 0.0,
+      "dLow": 1.0,
+      "dHigh": 4.0
+    },
+    {
+      "class": "Dredger",
+      "aisShipType": 33.0,
+      "referenceSpeedKnots": 9.5,
+      "cargoBranch": 0.0,
+      "dLow": 1.0,
+      "dHigh": 3.0
+    },
+    {
+      "class": "Fishing",
+      "aisShipType": 30.0,
+      "referenceSpeedKnots": 6.4,
+      "cargoBranch": 0.0,
+      "dLow": 1.0,
+      "dHigh": 3.0
+    },
+    {
+      "class": "Government/Research",
+      "aisShipType": "51,53,55",
+      "referenceSpeedKnots": 8.0,
+      "cargoBranch": 0.0,
+      "dLow": 1.0,
+      "dHigh": 3.0
+    },
+    {
+      "class": "Naval",
+      "aisShipType": 35.0,
+      "referenceSpeedKnots": 11.1,
+      "cargoBranch": 0.0,
+      "dLow": 1.0,
+      "dHigh": 3.0
+    },
+    {
+      "class": "Other",
+      "aisShipType": "All other type IDs",
+      "referenceSpeedKnots": 7.4,
+      "cargoBranch": 0.0,
+      "dLow": 1.0,
+      "dHigh": 3.0
+    },
+    {
+      "class": "Passenger",
+      "aisShipType": "60-69 (length \u2264 100 m)",
+      "referenceSpeedKnots": 9.7,
+      "cargoBranch": 0.0,
+      "dLow": 1.0,
+      "dHigh": 3.0
+    },
+    {
+      "class": "Recreational",
+      "aisShipType": "36,37",
+      "referenceSpeedKnots": 10.6,
+      "cargoBranch": 0.0,
+      "dLow": 1.0,
+      "dHigh": 3.0
+    },
+    {
+      "class": "Tanker",
+      "aisShipType": "80-89",
+      "referenceSpeedKnots": 12.4,
+      "cargoBranch": 1.0,
+      "dLow": 1.0,
+      "dHigh": 3.0
+    },
+    {
+      "class": "Tug",
+      "aisShipType": "31,32,52",
+      "referenceSpeedKnots": 3.7,
+      "cargoBranch": 0.0,
+      "dLow": 1.0,
+      "dHigh": 3.0
+    },
+    {
+      "class": "Vehicle Carrier",
+      "aisShipType": "n/a",
+      "referenceSpeedKnots": 15.8,
+      "cargoBranch": 1.0,
+      "dLow": 1.0,
+      "dHigh": 3.0
+    }
+  ],
+  "cachedReferenceVectors": [
+    {
+      "frequencyHz": 10.0,
+      "sourcePsdDb": 157.2339894847038,
+      "sourceBandLevelDb": 160.87010928362525
+    },
+    {
+      "frequencyHz": 12.589254117941664,
+      "sourcePsdDb": 158.40246325675528,
+      "sourceBandLevelDb": 163.03858305567672
+    },
+    {
+      "frequencyHz": 15.848931924611124,
+      "sourcePsdDb": 159.6709865971012,
+      "sourceBandLevelDb": 165.30710639602265
+    },
+    {
+      "frequencyHz": 19.95262314968879,
+      "sourcePsdDb": 161.09866791134417,
+      "sourceBandLevelDb": 167.7347877102656
+    },
+    {
+      "frequencyHz": 25.11886431509578,
+      "sourcePsdDb": 162.77280092707088,
+      "sourceBandLevelDb": 170.40892072599232
+    },
+    {
+      "frequencyHz": 31.622776601683785,
+      "sourcePsdDb": 164.77871180058708,
+      "sourceBandLevelDb": 173.41483159950852
+    },
+    {
+      "frequencyHz": 39.81071705534973,
+      "sourcePsdDb": 166.88593067451512,
+      "sourceBandLevelDb": 176.52205047343656
+    },
+    {
+      "frequencyHz": 50.11872336272721,
+      "sourcePsdDb": 167.2817063550064,
+      "sourceBandLevelDb": 177.91782615392785
+    },
+    {
+      "frequencyHz": 63.095734448019314,
+      "sourcePsdDb": 164.23675217200594,
+      "sourceBandLevelDb": 175.87287197092738
+    },
+    {
+      "frequencyHz": 79.4328234724281,
+      "sourcePsdDb": 160.0794887111381,
+      "sourceBandLevelDb": 172.71560851005955
+    },
+    {
+      "frequencyHz": 100.0,
+      "sourcePsdDb": 155.73583403841064,
+      "sourceBandLevelDb": 169.3719538373321
+    },
+    {
+      "frequencyHz": 125.89254117941667,
+      "sourcePsdDb": 154.69649706264497,
+      "sourceBandLevelDb": 169.3326168615664
+    },
+    {
+      "frequencyHz": 158.4893192461113,
+      "sourcePsdDb": 153.33604278279392,
+      "sourceBandLevelDb": 168.97216258171537
+    },
+    {
+      "frequencyHz": 199.52623149688796,
+      "sourcePsdDb": 151.70933464358956,
+      "sourceBandLevelDb": 168.345454442511
+    },
+    {
+      "frequencyHz": 251.188643150958,
+      "sourcePsdDb": 149.89239021333603,
+      "sourceBandLevelDb": 167.52851001225747
+    },
+    {
+      "frequencyHz": 316.22776601683796,
+      "sourcePsdDb": 147.95555480988122,
+      "sourceBandLevelDb": 166.59167460880266
+    },
+    {
+      "frequencyHz": 398.1071705534972,
+      "sourcePsdDb": 145.9511635531175,
+      "sourceBandLevelDb": 165.58728335203895
+    },
+    {
+      "frequencyHz": 501.18723362727224,
+      "sourcePsdDb": 143.91321778042794,
+      "sourceBandLevelDb": 164.54933757934938
+    },
+    {
+      "frequencyHz": 630.9573444801932,
+      "sourcePsdDb": 141.86185532145953,
+      "sourceBandLevelDb": 163.49797512038097
+    },
+    {
+      "frequencyHz": 794.3282347242815,
+      "sourcePsdDb": 139.80812654296614,
+      "sourceBandLevelDb": 162.44424634188758
+    },
+    {
+      "frequencyHz": 1000.0,
+      "sourcePsdDb": 137.75759055242014,
+      "sourceBandLevelDb": 161.39371035134158
+    },
+    {
+      "frequencyHz": 1258.9254117941673,
+      "sourcePsdDb": 135.71266562957274,
+      "sourceBandLevelDb": 160.34878542849418
+    },
+    {
+      "frequencyHz": 1584.8931924611136,
+      "sourcePsdDb": 133.67405899130614,
+      "sourceBandLevelDb": 159.31017879022758
+    },
+    {
+      "frequencyHz": 1995.2623149688798,
+      "sourcePsdDb": 131.64160045851895,
+      "sourceBandLevelDb": 158.2777202574404
+    },
+    {
+      "frequencyHz": 2511.8864315095807,
+      "sourcePsdDb": 129.61471360056572,
+      "sourceBandLevelDb": 157.25083339948716
+    },
+    {
+      "frequencyHz": 3162.2776601683795,
+      "sourcePsdDb": 127.59267368200773,
+      "sourceBandLevelDb": 156.22879348092917
+    },
+    {
+      "frequencyHz": 3981.071705534973,
+      "sourcePsdDb": 125.57474286659112,
+      "sourceBandLevelDb": 155.21086266551256
+    },
+    {
+      "frequencyHz": 5011.872336272723,
+      "sourcePsdDb": 123.56023602233148,
+      "sourceBandLevelDb": 154.19635582125292
+    },
+    {
+      "frequencyHz": 6309.573444801934,
+      "sourcePsdDb": 121.54854812537191,
+      "sourceBandLevelDb": 153.18466792429336
+    },
+    {
+      "frequencyHz": 7943.282347242817,
+      "sourcePsdDb": 119.53916108986326,
+      "sourceBandLevelDb": 152.1752808887847
+    },
+    {
+      "frequencyHz": 10000.0,
+      "sourcePsdDb": 117.53164016700504,
+      "sourceBandLevelDb": 151.16775996592648
+    },
+    {
+      "frequencyHz": 12589.25411794168,
+      "sourcePsdDb": 115.52562559733445,
+      "sourceBandLevelDb": 150.1617453962559
+    },
+    {
+      "frequencyHz": 15848.931924611137,
+      "sourcePsdDb": 113.52082262450918,
+      "sourceBandLevelDb": 149.15694242343062
+    },
+    {
+      "frequencyHz": 19952.623149688803,
+      "sourcePsdDb": 111.51699150045192,
+      "sourceBandLevelDb": 148.15311129937336
+    },
+    {
+      "frequencyHz": 25118.864315095798,
+      "sourcePsdDb": 109.51393827252502,
+      "sourceBandLevelDb": 147.15005807144647
+    },
+    {
+      "frequencyHz": 31622.776601683803,
+      "sourcePsdDb": 107.51150667595509,
+      "sourceBandLevelDb": 146.14762647487652
+    }
+  ]
+}

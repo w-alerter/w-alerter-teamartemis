@@ -1,0 +1,7 @@
+
+# Offline scientific inspection cache
+__pycache__/
+*.pyc
+
+# Preserve raw scientific sources locally; distribute only bounded processed assets.
+data/raw/
